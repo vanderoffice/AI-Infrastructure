@@ -355,7 +355,7 @@ You might wonder why remote machines do not auto-pull on a schedule. The reason 
 
 ## Portable Path Rules
 
-This section exists because of a real incident: nine files in the dotfiles repo contained hardcoded paths like `/Users/slate/Documents/...`, and every one of them broke when pulled to a machine with a different username. The fix was straightforward, but the lesson was worth codifying into rules.
+This section exists because of a real incident: nine files in the dotfiles repo contained hardcoded paths like `/Users/alice/Documents/...`, and every one of them broke when pulled to a machine with a different username. The fix was straightforward, but the lesson was worth codifying into rules.
 
 ### The Rules
 
@@ -372,7 +372,7 @@ Never hardcode a username into a path:
 
 ```bash
 # WRONG -- breaks on any machine with a different username
-/Users/slate/dotfiles/backup/mac-backup.sh
+/Users/alice/dotfiles/backup/mac-backup.sh
 
 # RIGHT -- works everywhere
 ${HOME}/dotfiles/backup/mac-backup.sh

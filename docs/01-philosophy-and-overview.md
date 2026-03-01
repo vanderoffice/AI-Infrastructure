@@ -8,9 +8,9 @@ This chapter explains what this infrastructure is, why it exists, and what it gi
 
 This infrastructure serves two distinct purposes that share the same toolchain.
 
-**Policy research and professional writing.** Government automation analysis, document generation, presentation creation, meeting transcripts, and professional communications. The workflow looks like: research a policy topic, synthesize findings into a structured document, generate a slide deck, and publish it. Claude Code drives the entire pipeline -- from web research to final deliverable.
+**Policy research and professional writing.** Government automation analysis, document generation, presentation creation, meeting transcripts, and professional communications. The workflow looks like: research a policy topic, synthesize findings into a structured document, generate a slide deck, and publish it. [Claude Code](https://docs.anthropic.com/en/docs/claude-code) drives the entire pipeline -- from web research to final deliverable.
 
-**AI-assisted software development.** Production web applications, RAG-powered chatbots, workflow automation, monitoring dashboards, and the infrastructure itself. The workflow looks like: describe what you want built, Claude Code writes the code, tests it, deploys it, and monitors it. The bots, the website, the backup system, the alerting pipeline -- all of it was built and is maintained this way.
+**AI-assisted software development.** Production web applications, [RAG](https://en.wikipedia.org/wiki/Retrieval-augmented_generation)-powered chatbots (Retrieval-Augmented Generation -- a technique where an AI retrieves relevant documents before generating a response), workflow automation, monitoring dashboards, and the infrastructure itself. The workflow looks like: describe what you want built, Claude Code writes the code, tests it, deploys it, and monitors it. The bots, the website, the backup system, the alerting pipeline -- all of it was built and is maintained this way.
 
 These two missions reinforce each other. The writing tools (presentation generators, document formatters, transcript processors) are software projects that Claude Code builds and maintains. The software projects produce deliverables for the policy work. The infrastructure that supports both is itself maintained by Claude Code. It is turtles all the way down.
 
@@ -18,7 +18,7 @@ These two missions reinforce each other. The writing tools (presentation generat
 
 ## Claude Code as an Autonomous Development Engine
 
-Claude Code is Anthropic's CLI tool. It puts Claude -- the AI model -- inside your terminal with full access to your filesystem, shell, and connected tools. You type what you want in natural language. Claude Code reads your codebase, writes files, runs commands, checks the output, and iterates until the task is done.
+Claude Code is [Anthropic](https://www.anthropic.com/)'s [CLI](https://en.wikipedia.org/wiki/Command-line_interface) (command-line interface) tool. It puts Claude -- the AI model -- inside your terminal with full access to your filesystem, shell, and connected tools. You type what you want in natural language. Claude Code reads your codebase, writes files, runs commands, checks the output, and iterates until the task is done.
 
 This is different from other AI coding tools in a way that matters.
 
@@ -33,10 +33,10 @@ This is different from other AI coding tools in a way that matters.
 - Read your entire codebase to understand architecture
 - Write new files and modify existing ones
 - Run tests and fix failures
-- SSH into remote servers to check status or deploy
+- [SSH](https://en.wikipedia.org/wiki/Secure_Shell) (Secure Shell) into remote servers to check status or deploy
 - Create git commits and push to remote repositories
 - Execute multi-step plans spanning dozens of files
-- Use MCP tools to interact with external services (databases, APIs, workflow engines)
+- Use [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) tools to interact with external services (databases, [APIs](https://en.wikipedia.org/wiki/API), workflow engines)
 
 The practical difference: you can tell Claude Code "add a new chatbot to the website that answers questions about water policy using this PDF as its knowledge base" and walk away. It will create the RAG pipeline, build the UI component, wire up the API routes, test the integration, deploy to production, and verify the deployment. That is not a hypothetical. That is how the chatbots in this infrastructure were built.
 
@@ -67,11 +67,11 @@ A single laptop can run Claude Code. You do not need seven machines. But role se
 |---------|----------|------|---------------|
 | **StudioM4** | Apple M4, macOS | Primary development | Your main workstation. Claude Code runs here. Code gets written here. |
 | **OfficeM4P** | Apple M4 Pro, 24GB, macOS | Heavy AI and research | When you need more compute -- deep research, GIS processing, heavy inference. Dedicated desk, dedicated focus. |
-| **ServerM2P** | Apple M2 Pro (headless), macOS | Home server and MCP hub | Always-on. Hosts MCP servers that all machines share. Stores backups on a 4TB SSD. Runs the test environment. |
-| **VPS** | Ubuntu 24.04 (Hostinger) | Production | The public-facing server. Hosts the website, chatbots, APIs, monitoring, and workflow automation. Lives in a data center. |
-| **NetSentry** | Raspberry Pi 5 | Primary DNS and monitoring | Network-wide ad blocking via Pi-hole. Recursive DNS via Unbound. Infrastructure dashboard. |
-| **AlertNode** | Raspberry Pi 3B+ | Secondary DNS and alerting | Backup DNS. Push notifications via ntfy. Watches NetSentry (mutual monitoring). |
-| **S23+** | Samsung Galaxy S23+ | Mobile access | Remote access to everything via Tailscale. Media capture. Push notification receiver. |
+| **ServerM2P** | Apple M2 Pro (headless), macOS | Home server and MCP hub | Always-on. Hosts MCP servers that all machines share. Stores backups on a 4TB [SSD](https://en.wikipedia.org/wiki/Solid-state_drive). Runs the test environment. |
+| **[VPS](https://en.wikipedia.org/wiki/Virtual_private_server)** | Ubuntu 24.04 (Hostinger) | Production | A Virtual Private Server -- a cloud-hosted machine in a data center. Hosts the website, chatbots, APIs, monitoring, and workflow automation. |
+| **NetSentry** | Raspberry Pi 5 | Primary [DNS](https://en.wikipedia.org/wiki/Domain_Name_System) and monitoring | Network-wide ad blocking via [Pi-hole](https://pi-hole.net/). Recursive DNS (Domain Name System -- translates domain names to IP addresses) via [Unbound](https://nlnetlabs.nl/projects/unbound/about/). Infrastructure dashboard. |
+| **AlertNode** | Raspberry Pi 3B+ | Secondary DNS and alerting | Backup DNS. Push notifications via [ntfy](https://ntfy.sh/). Watches NetSentry (mutual monitoring). |
+| **S23+** | Samsung Galaxy S23+ | Mobile access | Remote access to everything via [Tailscale](https://tailscale.com/). Media capture. Push notification receiver. |
 
 ### The Pipeline
 
@@ -81,13 +81,13 @@ Code flows in one direction through the system:
 Dev (StudioM4 / OfficeM4P) --> Test (ServerM2P) --> Prod (VPS)
 ```
 
-Development machines are where Claude Code writes and tests code locally. ServerM2P is where you test in a production-like environment before deploying. The VPS is production -- the public internet hits it.
+Development machines are where Claude Code writes and tests code locally. ServerM2P is where you test in a production-like environment before deploying. The VPS is production -- the public internet hits it. This follows a standard [CI/CD](https://en.wikipedia.org/wiki/CI/CD) (Continuous Integration / Continuous Deployment) pattern.
 
 This separation means a bug in development never takes down production. A misconfigured Docker container on ServerM2P does not affect the website. And if the VPS has an issue, your development machines and home server are unaffected.
 
 ### The MCP Hub Pattern
 
-ServerM2P's most important role is hosting shared MCP servers. Without it, every machine would need its own copy of every tool -- its own memory server, its own LLM gateway, its own n8n connection. With the hub, tools are installed once on ServerM2P and shared to all machines via SSE (Server-Sent Events) over the Tailscale mesh.
+ServerM2P's most important role is hosting shared MCP servers. Without it, every machine would need its own copy of every tool -- its own memory server, its own [LLM](https://en.wikipedia.org/wiki/Large_language_model) (Large Language Model) gateway, its own [n8n](https://n8n.io/) connection. With the hub, tools are installed once on ServerM2P and shared to all machines via [SSE](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) (Server-Sent Events -- a protocol for streaming data from server to client) over the Tailscale mesh.
 
 ```
 StudioM4  ---SSE--->  ServerM2P (MCP Hub)  <---SSE---  OfficeM4P
@@ -109,13 +109,13 @@ When Claude Code on StudioM4 saves something to memory, Claude Code on OfficeM4P
 
 A mesh of 7 machines where you talk to Claude Code in your terminal and it:
 
-- **Builds full-stack web applications** with React, Vite, and Tailwind. From `npm create vite` to production deployment in a single session.
-- **Creates and maintains RAG-powered chatbots** backed by pgvector and Supabase. Ingest a PDF, generate embeddings, build a chat interface, deploy it.
-- **Automates government workflows** with n8n. Webhook-triggered document generation, form processing, email routing.
+- **Builds full-stack web applications** with [React](https://react.dev/), [Vite](https://vite.dev/), and [Tailwind CSS](https://tailwindcss.com/). From `npm create vite` to production deployment in a single session.
+- **Creates and maintains RAG-powered chatbots** backed by [pgvector](https://github.com/pgvector/pgvector) and [Supabase](https://supabase.com/). Ingest a PDF, generate [embeddings](https://en.wikipedia.org/wiki/Word_embedding) (numerical representations of text that capture meaning), build a chat interface, deploy it.
+- **Automates government workflows** with n8n. [Webhook](https://en.wikipedia.org/wiki/Webhook)-triggered document generation, form processing, email routing.
 - **Generates presentations from research.** Give it a topic, it researches, outlines, writes, and builds a reveal.js slide deck.
 - **Manages its own memory across sessions.** Claude Code remembers project state, architecture decisions, and infrastructure knowledge through a shared memory graph. Start a session on StudioM4, finish it on OfficeM4P.
-- **Monitors, backs up, and maintains the entire infrastructure.** Nightly backups with failure-only alerting. Prometheus metrics. Push notifications on your phone when something breaks. Silence when everything is healthy.
-- **Syncs configuration across all machines automatically.** Change a dotfile on one machine, it propagates to all others via git hooks.
+- **Monitors, backs up, and maintains the entire infrastructure.** Nightly backups with failure-only alerting. [Prometheus](https://prometheus.io/) metrics. Push notifications on your phone when something breaks. Silence when everything is healthy.
+- **Syncs configuration across all machines automatically.** Change a [dotfile](https://dotfiles.github.io/) (configuration files like `.zshrc` or `.gitconfig` that define how your tools behave) on one machine, it propagates to all others via [git](https://git-scm.com/) hooks.
 
 The infrastructure maintains itself. Backups run nightly. Health checks run on schedule. Alerts fire only when something breaks. The Sunday morning digest proves the alerting system itself is alive. You spend your time building things, not babysitting servers.
 
@@ -129,9 +129,9 @@ Not everyone needs seven machines. Here is how to scale the system down to what 
 
 **What you get:** Claude Code on your Mac as the development engine. A VPS as your production target. This is the core experience.
 
-**What you run locally:** Claude Code, MCP servers (memory, LLM gateway) running as stdio processes instead of SSE. Your dotfiles repo for configuration.
+**What you run locally:** Claude Code, MCP servers (memory, LLM gateway) running as stdio processes instead of SSE. Your [dotfiles](https://dotfiles.github.io/) repo for configuration.
 
-**What runs on the VPS:** Your production website, Docker containers, nginx, SSL, monitoring.
+**What runs on the VPS:** Your production website, [Docker](https://www.docker.com/) containers (lightweight isolated environments for running applications), [nginx](https://nginx.org/) (a web server and reverse proxy), [SSL](https://en.wikipedia.org/wiki/Transport_Layer_Security)/TLS encryption, monitoring.
 
 **What you lose:**
 - No MCP hub (run servers locally on your Mac -- they just are not shareable)

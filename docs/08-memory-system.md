@@ -118,10 +118,10 @@ Auto-memory is a set of markdown files that Claude Code automatically injects in
 
 **Location:** `~/.claude/projects/<path-encoded>/memory/`
 
-The project path is encoded by replacing slashes with dashes. For the home directory (`/Users/slate`), the path becomes `-Users-slate`. So the auto-memory directory is:
+The project path is encoded by replacing slashes with dashes. For the home directory (`/Users/alice`), the path becomes `-Users-alice`. So the auto-memory directory is:
 
 ```
-~/.claude/projects/-Users-slate/memory/
+~/.claude/projects/-Users-alice/memory/
 ```
 
 **How injection works:**
@@ -134,7 +134,7 @@ The project path is encoded by replacing slashes with dashes. For the home direc
 **The directory structure for a mature setup:**
 
 ```
-~/.claude/projects/-Users-slate/memory/
+~/.claude/projects/-Users-alice/memory/
   MEMORY.md                    # Main file (auto-injected, ~200 line budget)
   waterbot.md                  # WaterBot v2.0 details
   cross-bot-standardization.md # Shared bot components
@@ -239,7 +239,7 @@ Common CRITICAL sections and why they exist:
 | Production safety | Claude was treating dev repos as deployment targets |
 | zsh reserved variables | Claude used `path` and `status` as variable names, clobbering shell state |
 | MCP config location | Claude looked for `~/.mcp.json` instead of `~/.claude.json` |
-| Portable paths | Claude hardcoded `/Users/slate/` in configs that needed to work on multiple machines |
+| Portable paths | Claude hardcoded `/Users/alice/` in configs that needed to work on multiple machines |
 | Token bloat prevention | Claude put dependencies under `~/.claude/commands/`, bloating every session |
 | Cost routing | Claude routed text generation through the LLM gateway API, double-billing |
 
@@ -250,16 +250,16 @@ Every one of these rules exists because the mistake actually happened. They are 
 Current state of in-progress work. Each entry includes enough information for Claude to pick up where it left off.
 
 ```markdown
-## Stem-to-MIDI Pipeline -- GSD INITIALIZED (2026-02-23)
-- **Repo:** /Users/slate/projects/stem-to-midi/
-- **GSD:** 6 phases, 12 plans, 0 completed | Phase 1 ready to plan
-- **Resume:** cd /Users/slate/projects/stem-to-midi && /gsd:plan-phase 1
-- **Key changes from research:** Omnizart killed, ServerM2P eliminated,
-  audio-separator replaces raw demucs, BS-RoFormer SOTA
-- **Stack:** audio-separator + Basic-Pitch + reathon + librosa + watchdog
+## Water Regulation Chatbot v2.0 -- GSD COMPLETE (2026-02-14)
+- **Repo:** ~/Documents/GitHub/vanderdev-website/
+- **GSD:** 6 phases, 13 plans, 13 completed | Production deployed
+- **Key decisions:** Shared ChatMessage.jsx across all 3 bots,
+  FundingNavigator wizard with 58-program matching, Permit Finder
+  with 83-node decision tree
+- **Stack:** React + Vite + pgvector + n8n webhooks + OpenAI embeddings
 ```
 
-The key elements: repo location, GSD status (phases/plans/completion), a resume command that picks up exactly where you left off, and any important decisions already made.
+The key elements: repo location, GSD status (phases/plans/completion), a resume command (for in-progress projects) that picks up exactly where you left off, and any important decisions already made.
 
 ### Section 3: Infrastructure Knowledge
 
@@ -552,12 +552,12 @@ These are the problems you will encounter. Knowing them in advance saves real de
 | Issue | Details | Fix |
 |-------|---------|-----|
 | MEMORY.md truncated after ~200 lines | Claude Code only injects the first ~200 lines into context. Everything below that may not be seen. | Keep MEMORY.md concise. Move details to topic files. Put CRITICAL rules at the top. |
-| Path encoding in project directory | The path `/Users/slate` becomes `-Users-slate` in `~/.claude/projects/`. Slashes become dashes. | Check the exact directory name if MEMORY.md is not being injected. |
+| Path encoding in project directory | The path `/Users/alice` becomes `-Users-alice` in `~/.claude/projects/`. Slashes become dashes. | Check the exact directory name if MEMORY.md is not being injected. |
 | MCP Memory server down | If the hub is unreachable, memory tools silently disappear. Claude falls back to local auto-memory only, with no error message. | If Claude seems to have forgotten shared knowledge, check if the hub is running: `curl http://<hub-ip>:8083/sse` |
 | Cross-machine drift | Writing only to local MEMORY.md means the other machine never sees the update. This is the most common memory system failure. | Follow the write order rule religiously: MCP Memory first, then local. |
 | Topic files not auto-loaded | Only MEMORY.md is auto-injected. Topic files (`waterbot.md`, `infrastructure.md`, etc.) are only read when Claude explicitly references them. | Keep the most important information in MEMORY.md. Use topic files for deep dives. |
 | Duplicate instructions | Putting the same rule in both CLAUDE.md and MEMORY.md wastes context window space. | CLAUDE.md is for behavioral instructions. MEMORY.md is for learned knowledge. Do not duplicate between them. |
 | Stale observations in MCP Memory | An observation says "backup runs at 3 AM" but you changed it to 5 AM last month. Old observations do not auto-expire. | Periodically audit MCP Memory. Delete outdated observations with `mcp__memory__delete_observations`. |
 | Entity naming collisions | Two entities named "Backup" -- one for the script, one for the strategy. | Use descriptive, specific entity names: `Backup_Script_mac`, `Backup_Strategy_Overview`. |
-| Memory injection on wrong project | Working in `/Users/slate/projects/myapp` but memory is set up for `/Users/slate`. | Claude walks up the directory tree. The home-level memory will still apply. Project-specific memory directories override for that subtree. |
+| Memory injection on wrong project | Working in `/Users/alice/projects/myapp` but memory is set up for `/Users/alice`. | Claude walks up the directory tree. The home-level memory will still apply. Project-specific memory directories override for that subtree. |
 | Large MCP Memory graph slows searches | After hundreds of entities, `read_graph` becomes expensive. | Use `search_nodes` with specific keywords instead of `read_graph`. Only read the full graph when you need a broad overview. |

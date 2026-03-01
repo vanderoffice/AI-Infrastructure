@@ -22,13 +22,13 @@ Seven machines, each with a distinct role. No single point of failure for critic
 
 | Machine | Hostname | User | Hardware | LAN IP | Tailscale IP | Role | Always-On |
 |---------|----------|------|----------|--------|--------------|------|-----------|
-| StudioM4 | StudioM4.local | slate | Apple M4 | 192.168.0.102 | 100.68.91.96 | Primary Development | No |
-| OfficeM4P | OfficeM4P.local | quartz | Apple M4 Pro, 24 GB | 192.168.0.101 | 100.102.76.65 | Heavy AI, Research | Yes |
-| ServerM2P | ServerM2P.local | commandervander | Apple M2 Pro, headless | 192.168.0.100 | 100.74.27.128 | Home Server, MCP Hub, Test | Yes |
-| VPS | srv1060880.hstgr.cloud | root | Hostinger Ubuntu 24.04 | 212.38.95.33 | 100.111.63.3 | Production | Yes |
-| NetSentry | netsentry.local | pi | Raspberry Pi 5 | 192.168.0.113 | 100.72.66.9 | Primary DNS, Monitoring | Yes |
-| AlertNode | alertnode.local | pi | Raspberry Pi 3B+ | 192.168.0.112 | 100.69.47.71 | Secondary DNS, Alerting | Yes |
-| S23+ | samsung-sm-s916u | -- | Samsung Galaxy S23+ | -- | 100.113.201.9 | Mobile Dev, Media | No |
+| StudioM4 | StudioM4.local | alice | Apple M4 | 192.168.1.102 | 100.64.1.1 | Primary Development | No |
+| OfficeM4P | OfficeM4P.local | bob | Apple M4 Pro, 24 GB | 192.168.1.101 | 100.64.1.2 | Heavy AI, Research | Yes |
+| ServerM2P | ServerM2P.local | serveradmin | Apple M2 Pro, headless | 192.168.1.100 | 100.64.1.3 | Home Server, MCP Hub, Test | Yes |
+| VPS | your-vps.example.com | root | Hostinger Ubuntu 24.04 | 203.0.113.50 | 100.64.1.4 | Production | Yes |
+| NetSentry | netsentry.local | pi | Raspberry Pi 5 | 192.168.1.113 | 100.64.1.5 | Primary DNS, Monitoring | Yes |
+| AlertNode | alertnode.local | pi | Raspberry Pi 3B+ | 192.168.1.112 | 100.64.1.6 | Secondary DNS, Alerting | Yes |
+| S23+ | your-android-phone | -- | Samsung Galaxy S23+ | -- | 100.64.1.7 | Mobile Dev, Media | No |
 
 **What each machine does in plain English:**
 
@@ -54,7 +54,7 @@ The local network runs on a TP-Link Omada SDN (Software-Defined Networking) stac
 
 **Management:** The Omada Cloud Portal at `omada.tplinkcloud.com` provides remote management. Use the cloud portal, not the gateway's local web UI.
 
-**Home WiFi SSID:** `AD6XN` (this matters for SSH smart routing -- covered later in this chapter).
+**Home WiFi SSID:** `YourHomeWiFi` (this matters for SSH smart routing -- covered later in this chapter).
 
 **If you are scaling down:** You do not need enterprise networking gear. A consumer router works fine. The important pieces are static IP assignments (or DHCP reservations) for your servers and the ability to set custom DNS servers in DHCP settings.
 
@@ -66,10 +66,10 @@ The network is divided into zones to isolate traffic by trust level.
 
 | Zone | Subnet | Machines | Access Level |
 |------|--------|----------|--------------|
-| Trusted/Dev LAN | 192.168.0.x | StudioM4 (.102), OfficeM4P (.101), ServerM2P (.100) | Full inter-device SSH, key auth only |
+| Trusted/Dev LAN | 192.168.1.x | StudioM4 (.102), OfficeM4P (.101), ServerM2P (.100) | Full inter-device SSH, key auth only |
 | Tailscale Overlay | 100.x.x.x | All 7 devices | Encrypted WireGuard mesh, works from anywhere |
 | IoT/Media VLAN | Separate VLAN | Smart home devices, media players | Isolated from Trusted zone. Cannot reach dev machines. |
-| DMZ/Public | Hostinger datacenter | VPS (212.38.95.33) | Containerized, minimal attack surface, no inbound except 80/443 |
+| DMZ/Public | Hostinger datacenter | VPS (203.0.113.50) | Containerized, minimal attack surface, no inbound except 80/443 |
 
 **Key principle:** Dev machines live on the trusted LAN and can reach everything. IoT devices are jailed in their own VLAN so a compromised smart bulb cannot SSH into your server. The VPS is completely separate -- it lives in a datacenter and only accepts traffic on ports 80 and 443.
 
@@ -91,8 +91,8 @@ If you have machines in multiple locations (home, office, datacenter, your pocke
 
 ```
 # From your laptop at a coffee shop:
-ssh commandervander@100.74.27.128    # Connects to your home server
-curl http://100.72.66.9/admin        # Opens your Pi-hole dashboard
+ssh serveradmin@100.64.1.3    # Connects to your home server
+curl http://100.64.1.5/admin        # Opens your Pi-hole dashboard
 
 # Same commands work identically from your couch at home.
 # The IP addresses never change.
@@ -111,7 +111,7 @@ No configuration files. No certificates to manage. No ports to open.
 
 ## DNS Architecture
 
-DNS (Domain Name System) translates human-readable names like `vault.vanderdev.local` into IP addresses like `192.168.0.100`. This infrastructure runs its own DNS servers instead of relying on your ISP or Google/Cloudflare.
+DNS (Domain Name System) translates human-readable names like `vault.vanderdev.local` into IP addresses like `192.168.1.100`. This infrastructure runs its own DNS servers instead of relying on your ISP or Google/Cloudflare.
 
 ### Why run your own DNS?
 
@@ -125,8 +125,8 @@ Two DNS servers provide redundancy. If one goes down, the other takes over autom
 
 | Priority | Server | IP | Upstream Resolver | Why |
 |----------|--------|-----|-------------------|-----|
-| Primary | NetSentry (Pi 5) | 192.168.0.113 | Unbound (recursive) | Queries root nameservers directly. Maximum privacy. No upstream dependency. |
-| Secondary | AlertNode (Pi 3B+) | 192.168.0.112 | Cloudflare (1.1.1.1) | Fast fallback. If NetSentry is down, DNS still works via Cloudflare. |
+| Primary | NetSentry (Pi 5) | 192.168.1.113 | Unbound (recursive) | Queries root nameservers directly. Maximum privacy. No upstream dependency. |
+| Secondary | AlertNode (Pi 3B+) | 192.168.1.112 | Cloudflare (1.1.1.1) | Fast fallback. If NetSentry is down, DNS still works via Cloudflare. |
 
 ### How the pieces fit together
 
@@ -166,14 +166,14 @@ Custom DNS entries are configured in Pi-hole's configuration file (`/etc/pihole/
 
 | Name | Resolves To | Service |
 |------|-------------|---------|
-| `vault.vanderdev.local` | 192.168.0.100 | Vaultwarden (password manager) |
-| `n8n.local` | 192.168.0.100 | n8n (workflow automation) |
+| `vault.vanderdev.local` | 192.168.1.100 | Vaultwarden (password manager) |
+| `n8n.local` | 192.168.1.100 | n8n (workflow automation) |
 
 ### DHCP configuration
 
 The Omada router pushes both Pi-hole IPs to every device on the network via DHCP. This means every device automatically uses Pi-hole for DNS without any manual configuration.
 
-**Path:** Omada Controller --> Network Config --> LAN --> DHCP Server --> DNS Server: Custom --> `192.168.0.113, 192.168.0.112`
+**Path:** Omada Controller --> Network Config --> LAN --> DHCP Server --> DNS Server: Custom --> `192.168.1.113, 192.168.1.112`
 
 ---
 
@@ -196,11 +196,11 @@ Match host server,serverm2p exec "~/dotfiles/scripts/is-home.sh"
     HostName ServerM2P.local          # Home: use mDNS (fast, local)
 
 Match host server,serverm2p
-    HostName 100.74.27.128            # Away: use Tailscale IP (encrypted mesh)
+    HostName 100.64.1.3            # Away: use Tailscale IP (encrypted mesh)
 
 # Layer 2: Host blocks -- credentials only (no HostName here)
 Host server serverm2p
-    User commandervander
+    User serveradmin
     IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
 ```
@@ -209,8 +209,8 @@ Host server serverm2p
 
 This script determines if you are on the home network:
 
-1. Pings the gateway at `192.168.0.1` -- if it responds, you are home
-2. Checks the current WiFi SSID for `AD6XN` -- if it matches, you are home
+1. Pings the gateway at `192.168.1.1` -- if it responds, you are home
+2. Checks the current WiFi SSID for `YourHomeWiFi` -- if it matches, you are home
 3. If neither check passes, you are remote
 
 The script must exit `0` (home) or `1` (remote). SSH uses the exit code to decide which Match block to use.
@@ -221,14 +221,14 @@ The script must exit `0` (home) or `1` (remote). SSH uses the exit code to decid
 
 | Alias(es) | User | Target (Home) | Target (Remote) |
 |-----------|------|---------------|-----------------|
-| server, serverm2p | commandervander | ServerM2P.local | 100.74.27.128 |
-| office, officem4p | quartz | OfficeM4P.local | 100.102.76.65 |
-| netsentry | pi | netsentry.local | 100.72.66.9 |
-| alertnode | pi | alertnode.local | 100.69.47.71 |
-| vps | root | 100.111.63.3 (Tailscale preferred) | 212.38.95.33 (public fallback) |
+| server, serverm2p | serveradmin | ServerM2P.local | 100.64.1.3 |
+| office, officem4p | bob | OfficeM4P.local | 100.64.1.2 |
+| netsentry | pi | netsentry.local | 100.64.1.5 |
+| alertnode | pi | alertnode.local | 100.64.1.6 |
+| vps | root | 100.64.1.4 (Tailscale preferred) | 203.0.113.50 (public fallback) |
 | github.com | git | -- | -- |
 
-**Note on VPS:** The VPS prefers Tailscale even from home because it avoids exposing SSH on the public IP. The public IP (`212.38.95.33`) is a last-resort fallback.
+**Note on VPS:** The VPS prefers Tailscale even from home because it avoids exposing SSH on the public IP. The public IP (`203.0.113.50`) is a last-resort fallback.
 
 ### Security requirements
 
@@ -306,11 +306,11 @@ ssh-keygen -t ed25519 -C "your-email@example.com"
 
 ```bash
 ssh-copy-id user@100.x.x.x    # Use the Tailscale IP for each machine
-ssh-copy-id commandervander@100.74.27.128
-ssh-copy-id quartz@100.102.76.65
-ssh-copy-id pi@100.72.66.9
-ssh-copy-id pi@100.69.47.71
-ssh-copy-id root@100.111.63.3
+ssh-copy-id serveradmin@100.64.1.3
+ssh-copy-id bob@100.64.1.2
+ssh-copy-id pi@100.64.1.5
+ssh-copy-id pi@100.64.1.6
+ssh-copy-id root@100.64.1.4
 ```
 
 After this, you can SSH into any machine without a password.
@@ -325,11 +325,11 @@ Match host server exec "~/dotfiles/scripts/is-home.sh"
     HostName ServerM2P.local
 
 Match host server
-    HostName 100.74.27.128
+    HostName 100.64.1.3
 
 # Credentials
 Host server
-    User commandervander
+    User serveradmin
     IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
 ```
@@ -343,13 +343,13 @@ Repeat the Match/Host pattern for each machine.
 # Returns 0 if on home network, 1 if remote.
 
 # Check 1: Can we ping the gateway?
-if ping -c 1 -W 1 192.168.0.1 &>/dev/null; then
+if ping -c 1 -W 1 192.168.1.1 &>/dev/null; then
     exit 0
 fi
 
 # Check 2: Are we on the home WiFi?
 SSID=$(/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | awk '/ SSID/ {print $2}')
-if [ "$SSID" = "AD6XN" ]; then
+if [ "$SSID" = "YourHomeWiFi" ]; then
     exit 0
 fi
 
@@ -369,7 +369,7 @@ chmod +x ~/dotfiles/scripts/is-home.sh
 ssh server       # Should connect via ServerM2P.local (LAN)
 
 # From a remote network (disconnect from home WiFi or use phone hotspot):
-ssh server       # Should connect via 100.74.27.128 (Tailscale)
+ssh server       # Should connect via 100.64.1.3 (Tailscale)
 
 # Debug which hostname SSH resolved:
 ssh -G server | grep hostname
@@ -388,5 +388,5 @@ These are the things that will waste your time if you do not know about them upf
 | `is-home.sh` must be fast | If the script takes more than 1 second, SSH will feel sluggish on every connection. | Use short ping timeouts (`-W 1`). Do not add DNS lookups or HTTP requests to the script. |
 | WiFi SSID changes | If you rename your WiFi network, `is-home.sh` will think you are always remote. | Update the SSID check in `is-home.sh` to match your new network name. |
 | ServerM2P uses OrbStack | ServerM2P runs containers via OrbStack, not Docker Desktop. OrbStack is lighter and has better macOS integration. | If reproducing on Linux, use standard Docker Engine instead. OrbStack is macOS-only. |
-| VPS SSH prefers Tailscale | Even from home, SSH to the VPS goes through Tailscale (100.111.63.3) instead of the public IP. | This is intentional. It avoids exposing SSH on the public IP and keeps all traffic encrypted end-to-end. |
-| Different users per machine | Each machine has a different username (slate, quartz, commandervander, pi, root). | The SSH config `Host` blocks define the correct `User` for each alias. You never need to remember usernames. |
+| VPS SSH prefers Tailscale | Even from home, SSH to the VPS goes through Tailscale (100.64.1.4) instead of the public IP. | This is intentional. It avoids exposing SSH on the public IP and keeps all traffic encrypted end-to-end. |
+| Different users per machine | Each machine has a different username (alice, bob, serveradmin, pi, root). | The SSH config `Host` blocks define the correct `User` for each alias. You never need to remember usernames. |

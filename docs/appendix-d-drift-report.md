@@ -34,7 +34,7 @@ The audit was performed by SSH-ing into each machine and comparing running servi
 These were running but not documented. They are low-impact but should be cataloged:
 
 - **Syncthing** -- ports 8384 (web UI) and 22000 (sync protocol)
-- **socat Zigbee proxy** -- port 7639 forwarding to 192.168.0.21:7638
+- **socat Zigbee proxy** -- port 7639 forwarding to 192.168.1.21:7638
 - **Home Assistant** -- also listening on port 8300 (in addition to documented 8123)
 
 ### Recommended Actions for ServerM2P
@@ -76,8 +76,8 @@ These were running but not documented. They are low-impact but should be catalog
 |---|------|-----------|---------|----------|
 | 1 | NetSentry services | Pi-hole + Unbound + Homepage | Also runs Uptime Kuma on port 3001 | Medium |
 | 2 | gravity-sync frequency | Every 30 minutes | Every hour (`OnUnitActiveSec=1h` in systemd timer) | Low |
-| 3 | AlertNode upstream DNS | Cloudflare (1.1.1.1) only | Configured with 192.168.0.50 AND 1.1.1.1 | Medium |
-| 4 | Watchdog ntfy topic | Implied to use `vander-infra` | Uses `infrastructure-alerts` topic | Low |
+| 3 | AlertNode upstream DNS | Cloudflare (1.1.1.1) only | Configured with 192.168.1.50 AND 1.1.1.1 | Medium |
+| 4 | Watchdog ntfy topic | Implied to use `your-infra-topic` | Uses `your-alerts-topic` topic | Low |
 | 5 | AlertNode thermals | "Runs warm (60-65C)" | Actively throttling at 63.9C with throttle flag `0x80008` | Medium |
 | 6 | mDNS resolution | `netsentry.local` should resolve | Failed from StudioM4 during audit (possibly transient) | Low |
 | 7 | Pi-hole HTTPS | Not mentioned | Both Pis have TLS certificates and serve admin UI on port 443 | Low |
@@ -87,7 +87,7 @@ These were running but not documented. They are low-impact but should be catalog
 
 1. Add Uptime Kuma to NetSentry's documented services
 2. Update gravity-sync frequency from "30 minutes" to "1 hour"
-3. Investigate 192.168.0.50 -- what device is this? Is it still on the network? If it is a defunct device, remove it from AlertNode's upstream DNS configuration
+3. Investigate 192.168.1.50 -- what device is this? Is it still on the network? If it is a defunct device, remove it from AlertNode's upstream DNS configuration
 4. Standardize ntfy topic names across all alerting scripts
 5. Add a heatsink or small fan to AlertNode (Pi 3B+ thermal throttling at 63.9C degrades DNS performance)
 6. Test mDNS resolution again -- if persistent, check Avahi/Bonjour configuration on NetSentry

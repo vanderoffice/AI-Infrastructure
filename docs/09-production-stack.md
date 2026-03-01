@@ -4,7 +4,7 @@
 
 The development workflow needs a production target. Without one, code is written and tested but never deployed. vanderdev.net is where the infrastructure meets the public internet.
 
-The site is a React single-page application that hosts an infrastructure command center dashboard, three AI-powered chatbots, weather and environmental data displays, and government tools. It runs on a Hostinger VPS with 29 Docker containers, sits behind Cloudflare for edge protection, and renews its own SSL certificates automatically.
+The site is a React single-page application that hosts an infrastructure command center dashboard, three AI-powered chatbots, weather and environmental data displays, and government tools. You can see it live at [vanderdev.net](https://vanderdev.net). It runs on a Hostinger VPS with 29 Docker containers, sits behind Cloudflare for edge protection, and renews its own SSL certificates automatically.
 
 This chapter covers the application architecture, every Docker container running on the VPS, the nginx reverse proxy configuration, the CI/CD pipeline, and the edge security layer. By the end, you will understand how a single VPS serves a production React app alongside a self-hosted Supabase stack, a monitoring pipeline, and three RAG-powered chatbots -- and how to reproduce it.
 
@@ -298,7 +298,7 @@ A container rebuild would mean pulling a Node image, running `npm ci` and `npm r
 ### The rsync Flags
 
 ```bash
-rsync -avz --delete dist/ root@212.38.95.33:/root/vanderdev-website/dist/
+rsync -avz --delete dist/ root@203.0.113.50:/root/vanderdev-website/dist/
 ```
 
 | Flag | Meaning |

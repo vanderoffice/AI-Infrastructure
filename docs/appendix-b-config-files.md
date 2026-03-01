@@ -53,7 +53,7 @@ This file tells Claude Code where to find your MCP servers. It lives on each dev
 ```
 
 **Key points:**
-- Replace `<server-ip>` with your home server's LAN IP (e.g., `192.168.0.100`).
+- Replace `<server-ip>` with your home server's LAN IP (e.g., `192.168.1.100`).
 - All SSE servers run on the home server. Only `filesystem` runs locally via stdio.
 - This file is machine-specific. It is NOT part of your dotfiles repo (each machine may have different filesystem paths).
 - Never put API keys directly in this file. API keys live on the server side, inside the MCP server processes.
@@ -146,7 +146,7 @@ Host alertnode
 # Returns 0 (true) if on the home network, 1 (false) otherwise.
 # SSH Match blocks use the exit code to decide which HostName to use.
 
-HOME_NETWORK_PREFIX="192.168.0."
+HOME_NETWORK_PREFIX="192.168.1."
 
 if ifconfig 2>/dev/null | grep -q "$HOME_NETWORK_PREFIX"; then
     exit 0
@@ -175,12 +175,12 @@ The `infrastructure.sh` script in your dotfiles repo defines machine metadata, s
 
 # ─── Machine Definitions ───
 # Format: alias:name:tailscale_ip:lan_ip:user:role:always_on
-MACHINES="studio:StudioM4:100.68.91.96:192.168.0.102:slate:dev:no"
-MACHINES="$MACHINES office:OfficeM4P:100.102.76.65:192.168.0.101:quartz:dev:yes"
-MACHINES="$MACHINES server:ServerM2P:100.74.27.128:192.168.0.100:commandervander:server:yes"
-MACHINES="$MACHINES vps:VPS:100.111.63.3:212.38.95.33:root:production:yes"
-MACHINES="$MACHINES netsentry:NetSentry:100.72.66.9:192.168.0.113:pi:dns:yes"
-MACHINES="$MACHINES alertnode:AlertNode:100.69.47.71:192.168.0.112:pi:dns:yes"
+MACHINES="studio:StudioM4:100.64.1.1:192.168.1.102:alice:dev:no"
+MACHINES="$MACHINES office:OfficeM4P:100.64.1.2:192.168.1.101:bob:dev:yes"
+MACHINES="$MACHINES server:ServerM2P:100.64.1.3:192.168.1.100:serveradmin:server:yes"
+MACHINES="$MACHINES vps:VPS:100.64.1.4:203.0.113.50:root:production:yes"
+MACHINES="$MACHINES netsentry:NetSentry:100.64.1.5:192.168.1.113:pi:dns:yes"
+MACHINES="$MACHINES alertnode:AlertNode:100.64.1.6:192.168.1.112:pi:dns:yes"
 
 # ─── Sync Targets ───
 # Machines that receive dotfiles on sync
@@ -193,9 +193,9 @@ METRICS_FILE="$LOG_DIR/metrics.csv"
 HISTORY_DIR="$HOME/dotfiles/docs/history"
 
 # ─── Alert Configuration ───
-NTFY_TOPIC="vander-infra"
-NTFY_BACKUP_TOPIC="vanderbackups"
-NTFY_URL="http://192.168.0.112:8080"
+NTFY_TOPIC="your-infra-topic"
+NTFY_BACKUP_TOPIC="your-backup-topic"
+NTFY_URL="http://192.168.1.112:8080"
 
 # ─── Thresholds ───
 DISK_WARN_THRESHOLD=80

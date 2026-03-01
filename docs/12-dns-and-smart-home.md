@@ -17,10 +17,10 @@ The DNS setup uses two Raspberry Pis running Pi-hole, with the primary configure
 ```
 Client device (any)
   |
-  |--> NetSentry (192.168.0.113) -- Primary
+  |--> NetSentry (192.168.1.113) -- Primary
   |      Pi-hole --> Unbound --> Root nameservers (no third party)
   |
-  |--> AlertNode (192.168.0.112) -- Secondary
+  |--> AlertNode (192.168.1.112) -- Secondary
          Pi-hole --> Cloudflare (1.1.1.1)
 ```
 
@@ -35,7 +35,7 @@ NetSentry is the workhorse. It runs Pi-hole for filtering and Unbound for recurs
 | Property | Value |
 |----------|-------|
 | Hardware | Raspberry Pi 5 |
-| IP Address | 192.168.0.113 |
+| IP Address | 192.168.1.113 |
 | OS | Raspberry Pi OS (64-bit) |
 | Pi-hole | v6.3 (Core), FTL v6.4.1 |
 | Upstream DNS | Unbound on localhost (127.0.0.1#5335) |
@@ -81,7 +81,7 @@ AlertNode is the fallback DNS server and the alerting hub. Its DNS configuration
 | Property | Value |
 |----------|-------|
 | Hardware | Raspberry Pi 3B+ |
-| IP Address | 192.168.0.112 |
+| IP Address | 192.168.1.112 |
 | OS | Raspbian (32-bit, armv7l) |
 | Pi-hole | v6.3 (Core), FTL v6.4.1 |
 | Upstream DNS | 1.1.1.1 (Cloudflare) |
@@ -137,11 +137,11 @@ AlertNode runs a custom watchdog script that performs three checks against NetSe
 |-------|--------|----------------|
 | Ping test | 3 pings, 5s timeout | Network reachability |
 | Pi-hole API | HTTP GET to /admin/api.php | Pi-hole is running and responding |
-| DNS resolution | `dig @192.168.0.113` | Actual DNS queries are being answered |
+| DNS resolution | `dig @192.168.1.113` | Actual DNS queries are being answered |
 
 The watchdog uses state tracking to prevent alert spam. If NetSentry goes down, you get one alert. You do not get an alert every 5 minutes until it comes back. When it recovers, you get a single recovery notification.
 
-Alerts go to the ntfy topic `infrastructure-alerts`, which pushes to your phone.
+Alerts go to the ntfy topic `your-alerts-topic`, which pushes to your phone.
 
 ---
 
@@ -151,8 +151,8 @@ Pi-hole can serve as a local DNS resolver for internal services, so you can reac
 
 | Hostname | Resolves To | Service |
 |----------|-------------|---------|
-| vault.vanderdev.local | 192.168.0.100 | Vaultwarden (password manager on ServerM2P) |
-| n8n.local | 192.168.0.100 | n8n workflow engine (on ServerM2P) |
+| vault.vanderdev.local | 192.168.1.100 | Vaultwarden (password manager on ServerM2P) |
+| n8n.local | 192.168.1.100 | n8n workflow engine (on ServerM2P) |
 
 These records are configured in Pi-hole's Local DNS settings. They only work for devices using the Pi-holes as their DNS server (which is everything on the network, thanks to DHCP).
 
@@ -166,8 +166,8 @@ The Omada router's DHCP server pushes both Pi-hole IPs to every client that join
 
 | Setting | Value |
 |---------|-------|
-| Primary DNS | 192.168.0.113 (NetSentry) |
-| Secondary DNS | 192.168.0.112 (AlertNode) |
+| Primary DNS | 192.168.1.113 (NetSentry) |
+| Secondary DNS | 192.168.1.112 (AlertNode) |
 
 This is configured in the Omada controller's DHCP settings, not on the Pi-holes themselves. The Pi-holes do not run DHCP -- they only handle DNS. The router handles IP address assignment.
 
@@ -197,7 +197,7 @@ Physical devices (lights, sensors, switches)
 |----------|-------|
 | Container | homeassistant |
 | Port | 8123 |
-| Host | ServerM2P (192.168.0.100) |
+| Host | ServerM2P (192.168.1.100) |
 | Integrations | Zigbee2MQTT, Google Home, Apple HomeKit |
 
 Home Assistant is the central hub. It provides a web dashboard for controlling devices, automations that trigger actions based on conditions (time, sensor readings, device states), and integrations with external platforms like Google Home and Apple HomeKit. If you want your Zigbee light to turn on at sunset, Home Assistant is where that rule lives.
@@ -209,12 +209,12 @@ Home Assistant is the central hub. It provides a web dashboard for controlling d
 | Container | zigbee2mqtt |
 | Port | 8080 |
 | Coordinator | SLZB-MR1 CC2652P7 |
-| Coordinator address | tcp://192.168.0.21:7638 |
-| socat proxy | ServerM2P port 7639 --> 192.168.0.21:7638 |
+| Coordinator address | tcp://192.168.1.21:7638 |
+| socat proxy | ServerM2P port 7639 --> 192.168.1.21:7638 |
 
 Zigbee2MQTT bridges the gap between Zigbee radio devices and the MQTT messaging protocol that Home Assistant understands. The SLZB-MR1 is an Ethernet-connected Zigbee coordinator -- it plugs into your network with an Ethernet cable instead of USB. This is a significant advantage because USB Zigbee sticks can have range and interference issues, and they tie the coordinator to a specific machine's USB port.
 
-The socat proxy on ServerM2P (port 7639) bridges the TCP connection to the coordinator's native port (7638 on 192.168.0.21). This allows the Docker container to reach the coordinator through a stable local port.
+The socat proxy on ServerM2P (port 7639) bridges the TCP connection to the coordinator's native port (7638 on 192.168.1.21). This allows the Docker container to reach the coordinator through a stable local port.
 
 **Supported devices:** The CC2652P7 chipset supports Zigbee 3.0, which covers the vast majority of modern Zigbee devices -- lights, motion sensors, door/window sensors, temperature sensors, smart plugs, and switches from brands like IKEA, Aqara, Sonoff, and Philips Hue.
 
@@ -308,7 +308,7 @@ All three are available as official Docker images. A single `docker-compose.yml`
 
 **Pi 3B+ thermal throttling.** The Pi 3B+ runs hot and will thermal throttle at 60-65C. This does not break DNS (the workload is too light to be impacted), but it shortens the board's lifespan. A $5 heatsink-and-fan kit solves it. The Pi 5 has adequate built-in cooling and does not need extras for this workload.
 
-**Gravity-sync SSH keys.** Gravity-sync uses SSH to pull the database from the primary. You must generate an SSH key pair on AlertNode and copy the public key to NetSentry's `~/.ssh/authorized_keys`. If gravity-sync fails silently, check SSH connectivity first: `ssh pi@192.168.0.113` from AlertNode.
+**Gravity-sync SSH keys.** Gravity-sync uses SSH to pull the database from the primary. You must generate an SSH key pair on AlertNode and copy the public key to NetSentry's `~/.ssh/authorized_keys`. If gravity-sync fails silently, check SSH connectivity first: `ssh pi@192.168.1.113` from AlertNode.
 
 **Pi-hole v6 API changes.** Pi-hole v6 introduced a new API that is not backward-compatible with v5 scripts. If you are adapting monitoring scripts or dashboards from older guides, check whether they use the v5 API (`/admin/api.php`) or the v6 API. The watchdog script in this setup uses the v5-compatible endpoint, which still works in v6.
 

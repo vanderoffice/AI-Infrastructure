@@ -2,6 +2,8 @@
 
 This is the capstone chapter -- a linear checklist for reproducing the entire infrastructure from scratch. Every phase references concepts from earlier chapters, but this is the one document you follow start to finish. Work through it in order. Each phase builds on the previous one.
 
+**Use Claude Code to help you build it.** Clone this repository, open it in [Claude Code](https://docs.anthropic.com/en/docs/claude-code), and let it guide you through each phase. The `CLAUDE.md` at the repo root gives your Claude Code instance awareness of all 14 chapters. As you work through each step, you can ask Claude to read the relevant chapter, adapt the instructions to your specific machines and network, and execute the setup commands with you. The guide was designed so that a new user's Claude Code can reference it as interactive documentation -- not just reading material, but an executable blueprint.
+
 ---
 
 ## Prerequisites

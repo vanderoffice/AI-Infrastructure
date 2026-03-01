@@ -391,7 +391,7 @@ Uptime Kuma checks each endpoint every 60 seconds and sends an ntfy notification
 
 All of the monitoring described above has a single point of failure: the monitoring system itself. If Prometheus crashes and Alertmanager goes down with it, you receive no alerts -- and the silence feels exactly like "everything is healthy."
 
-The dead man's switch solves this. Every Sunday at 8:00 AM, `backup-health-check.sh --weekly-digest` runs on ServerM2P and sends a summary notification to the `vanderbackups` ntfy topic. This notification includes:
+The dead man's switch solves this. Every Sunday at 8:00 AM, `backup-health-check.sh --weekly-digest` runs on ServerM2P and sends a summary notification to the `your-backup-topic` ntfy topic. This notification includes:
 
 - Backup status for every machine (last successful backup time, size)
 - Any warnings or anomalies from the past week
@@ -413,8 +413,8 @@ Alerts are separated into two topics so you can set different notification behav
 
 | Topic | Purpose | Typical Volume |
 |-------|---------|----------------|
-| `vander-infra` | Infrastructure alerts (service down, audit failures, disk warnings) | 0-2 per week |
-| `vanderbackups` | Backup alerts (failure-only) + weekly digest | 1 per week (just the digest) |
+| `your-infra-topic` | Infrastructure alerts (service down, audit failures, disk warnings) | 0-2 per week |
+| `your-backup-topic` | Backup alerts (failure-only) + weekly digest | 1 per week (just the digest) |
 
 On a good week, you receive exactly one notification: the Sunday digest. Any additional notification means something needs attention.
 

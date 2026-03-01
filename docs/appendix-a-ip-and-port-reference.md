@@ -2,19 +2,21 @@
 
 This appendix documents every machine, IP address, and listening port in the infrastructure. Use it as a quick-reference when debugging connectivity, writing firewall rules, or onboarding a new device.
 
+> **Note:** All IP addresses, usernames, and hostnames in this guide are examples. Replace them with your own values. LAN IPs use the `192.168.1.x` range, Tailscale IPs use `100.64.1.x`, and the VPS IP uses an [RFC 5737](https://datatracker.ietf.org/doc/html/rfc5737) documentation address. Your actual IPs will differ.
+
 ---
 
 ## Machine IP Reference
 
 | Machine | Role | LAN IP | Tailscale IP | SSH Alias(es) | User |
 |---------|------|--------|--------------|---------------|------|
-| StudioM4 | Dev (primary) | 192.168.0.102 | 100.68.91.96 | (local) | slate |
-| OfficeM4P | Dev (secondary) | 192.168.0.101 | 100.102.76.65 | office, officem4p | quartz |
-| ServerM2P | Home server | 192.168.0.100 | 100.74.27.128 | server, serverm2p | commandervander |
-| VPS | Production | 212.38.95.33 | 100.111.63.3 | vps | root |
-| NetSentry | DNS primary | 192.168.0.113 | 100.72.66.9 | netsentry | pi |
-| AlertNode | DNS secondary + alerts | 192.168.0.112 | 100.69.47.71 | alertnode | pi |
-| S23+ | Mobile | -- | 100.113.201.9 | -- | -- |
+| StudioM4 | Dev (primary) | 192.168.1.102 | 100.64.1.1 | (local) | alice |
+| OfficeM4P | Dev (secondary) | 192.168.1.101 | 100.64.1.2 | office, officem4p | bob |
+| ServerM2P | Home server | 192.168.1.100 | 100.64.1.3 | server, serverm2p | serveradmin |
+| VPS | Production | 203.0.113.50 | 100.64.1.4 | vps | root |
+| NetSentry | DNS primary | 192.168.1.113 | 100.64.1.5 | netsentry | pi |
+| AlertNode | DNS secondary + alerts | 192.168.1.112 | 100.64.1.6 | alertnode | pi |
+| S23+ | Mobile | -- | 100.64.1.7 | -- | -- |
 
 **Notes:**
 - StudioM4 has no SSH alias because it is the primary dev machine (you are already on it).
@@ -50,7 +52,7 @@ Caddy reverse-proxies internal services to `*.vanderdev.local` hostnames. Servic
 | 8088 | GitHub MCP | Native (supergateway) | SSE |
 | 8089 | Google Sheets MCP | Native (supergateway) | SSE |
 
-All MCP servers expose SSE endpoints. Dev machines connect via `http://192.168.0.100:<port>/sse` (LAN) or the Tailscale IP when remote.
+All MCP servers expose SSE endpoints. Dev machines connect via `http://192.168.1.100:<port>/sse` (LAN) or the Tailscale IP when remote.
 
 ### Databases and Storage
 

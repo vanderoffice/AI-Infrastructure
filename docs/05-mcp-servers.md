@@ -160,7 +160,7 @@ This is the file that tells Claude Code where to find its MCP servers. It lives 
 
 ### Why It Is Not in the Dotfiles Repo
 
-`~/.claude.json` is machine-specific. The `filesystem` server needs paths that differ between machines (`/Users/slate` vs `/Users/quartz` vs `/Users/commandervander`). The `granola` server only exists on OfficeM4P. Syncing this file across machines would break things.
+`~/.claude.json` is machine-specific. The `filesystem` server needs paths that differ between machines (`/Users/alice` vs `/Users/bob` vs `/Users/serveradmin`). The `granola` server only exists on OfficeM4P. Syncing this file across machines would break things.
 
 Instead, template configs for each machine are stored at `~/dotfiles/mcp-configs/` for reference:
 
@@ -179,11 +179,11 @@ The file has two levels: global servers (available everywhere) and project-level
   "mcpServers": {
     "memory": {
       "type": "sse",
-      "url": "http://192.168.0.100:8083/sse"
+      "url": "http://192.168.1.100:8083/sse"
     },
     "llm-gateway": {
       "type": "sse",
-      "url": "http://192.168.0.100:3333/sse"
+      "url": "http://192.168.1.100:3333/sse"
     },
     "filesystem": {
       "type": "stdio",
@@ -192,11 +192,11 @@ The file has two levels: global servers (available everywhere) and project-level
     }
   },
   "projects": {
-    "/Users/slate": {
+    "/Users/alice": {
       "mcpServers": {
         "github": {
           "type": "sse",
-          "url": "http://192.168.0.100:8088/sse"
+          "url": "http://192.168.1.100:8088/sse"
         }
       }
     }
@@ -206,9 +206,9 @@ The file has two levels: global servers (available everywhere) and project-level
 
 **Reading this config:**
 
-- `memory` and `llm-gateway` are **global SSE servers**. They point to ServerM2P (192.168.0.100) on their respective ports. Available in every Claude Code session.
+- `memory` and `llm-gateway` are **global SSE servers**. They point to ServerM2P (192.168.1.100) on their respective ports. Available in every Claude Code session.
 - `filesystem` is a **global stdio server**. It runs locally as a subprocess. The `npx -y` command downloads and runs the package if it is not already installed.
-- `github` is a **project-level SSE server**. It is only available when Claude Code is working inside `/Users/slate` (or any subdirectory). This scoping lets you control which tools are available in which contexts.
+- `github` is a **project-level SSE server**. It is only available when Claude Code is working inside `/Users/alice` (or any subdirectory). This scoping lets you control which tools are available in which contexts.
 
 ### SSE URL Pattern
 

@@ -226,7 +226,7 @@ Vaultwarden is a lightweight, self-hosted implementation of the Bitwarden passwo
 
 | Property | Value |
 |----------|-------|
-| Host | ServerM2P (192.168.0.100) |
+| Host | ServerM2P (192.168.1.100) |
 | Reverse proxy | Caddy |
 | URL | https://vault.vanderdev.local |
 | Public exposure | None -- internal network only |
@@ -296,7 +296,7 @@ Prometheus (evaluates rules)
 Alertmanager (deduplicates, routes)
   |
 ntfy.sh (push notification to phone)
-  topic: vander-infra
+  topic: your-infra-topic
 ```
 
 ### Alert Rules
